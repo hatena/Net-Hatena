@@ -1,0 +1,24 @@
+# NAME
+
+Net::Hatena -
+
+# SYNOPSIS
+
+  use Net::Hatena;
+
+# DESCRIPTION
+
+Net::Hatena is
+
+# AUTHOR
+
+Kentaro Kuribayashi <kentarok@gmail.com>
+
+# SEE ALSO
+
+# LICENSE
+
+Copyright (C) Kentaro Kuribayashi
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
