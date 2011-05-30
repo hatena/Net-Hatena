@@ -20,6 +20,8 @@ use Class::Accessor::Lite (
     )],
 );
 
+use OAuth::Lite::Token;
+
 use Net::Hatena::User;
 use Net::Hatena::OAuth;
 
@@ -39,9 +41,13 @@ sub user {
         my $res = $self->oauth->request(
             method => 'GET',
             url    => 'http://n.hatena.com/applications/my.json',
-            token  => $self->access_token,
-            params => {},
-        ) or die $self->oauth->errstr;
+            token  => OAuth::Lite::Token->new(
+                token  => $self->access_token,
+                secret => $self->access_token_secret,
+            ),
+        );
+
+        die $self->oauth->errstr if $res->is_error;
 
         my $data = decode_json($res->decoded_content || $res->content);
         $user = Net::Hatena::User->new(%{$data || {}});
@@ -71,7 +77,7 @@ sub oauth {
 
 sub authorized {
     my $self = shift;
-    defined $self->access_token && $self->access_token_secret;
+    defined $self->access_token && defined $self->access_token_secret;
 }
 
 sub get_authorization_url {

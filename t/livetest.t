@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
+use URI::Escape;
 
 use Net::Hatena;
 
@@ -27,9 +28,8 @@ subtest 'authenticate' => sub {
     diag("open $authorization_url and input callback url:");
     my $callback_url = <STDIN>;
     my ($verifier) = ($callback_url =~ /\boauth_verifier=([^&;\s]+)/);
-
     my $access_token = $hatena->request_access_token(
-        verifier => $verifier,
+        verifier => uri_unescape($verifier),
     );
 
     ok $access_token,                'got access token object';

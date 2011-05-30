@@ -2,7 +2,10 @@ package Net::Hatena::User;
 use strict;
 use warnings;
 
-sub new { bless {}, shift }
+sub new {
+    my ($class, %args) = @_;
+    bless \%args, $class;
+}
 
 our $AUTOLOAD;
 sub AUTOLOAD {
