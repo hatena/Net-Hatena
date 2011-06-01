@@ -10,8 +10,6 @@ plan skip_all => 'set set $ENV{NET_HATENA_*} for livetest'
        (!$ENV{NET_HATENA_CONSUMER_KEY} || !$ENV{NET_HATENA_CONSUMER_SECRET});
 
 subtest 'authenticate' => sub {
-    local $| = 1;
-
     my $hatena = Net::Hatena->new(
         consumer_key    => $ENV{NET_HATENA_CONSUMER_KEY},
         consumer_secret => $ENV{NET_HATENA_CONSUMER_SECRET},
@@ -25,7 +23,15 @@ subtest 'authenticate' => sub {
     ok $authorization_url, 'got authorization url';
     ok $hatena->request_token, 'got request token';
 
-    diag("open $authorization_url and input callback url:");
+    if ($^O eq 'darwin') {
+        system 'open', $authorization_url;
+    }
+    else {
+        diag("open $authorization_url in your browser");
+    }
+
+    diag("paste callback url> ");
+
     my $callback_url = <STDIN>;
     my ($verifier) = ($callback_url =~ /\boauth_verifier=([^&;\s]+)/);
     my $access_token = $hatena->request_access_token(

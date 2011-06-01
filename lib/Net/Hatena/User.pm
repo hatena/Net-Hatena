@@ -12,6 +12,8 @@ sub AUTOLOAD {
     my $method = our $AUTOLOAD;
        $method =~ s/.*:://o;
 
+    return if $method eq 'DESTROY';
+
     {
         no strict 'refs';
         *{$AUTOLOAD} = sub {

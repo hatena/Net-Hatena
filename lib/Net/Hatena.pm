@@ -10,17 +10,17 @@ our $VERSION = '0.01';
 
 use Class::Accessor::Lite (
     rw => [qw(
-        _user
-        _oauth
         consumer_key
         consumer_secret
         request_token
-        access_token
+
+        _access_token
         access_token_secret
+
+        _user
+        _oauth
     )],
 );
-
-use OAuth::Lite::Token;
 
 use Net::Hatena::User;
 use Net::Hatena::OAuth;
@@ -38,19 +38,7 @@ sub user {
     }
 
     if (!$self->_user) {
-        my $res = $self->oauth->request(
-            method => 'GET',
-            url    => 'http://n.hatena.com/applications/my.json',
-            token  => OAuth::Lite::Token->new(
-                token  => $self->access_token,
-                secret => $self->access_token_secret,
-            ),
-        );
-
-        die $self->oauth->errstr if $res->is_error;
-
-        my $data = decode_json($res->decoded_content || $res->content);
-        $user = Net::Hatena::User->new(%{$data || {}});
+        my $user = $self->service('Nano')->user;
         $self->_user($user);
     }
 
@@ -66,13 +54,26 @@ sub oauth {
 
     if (!$self->_oauth) {
         $oauth = Net::Hatena::OAuth->new(
-            consumer_key    => $self->consumer_key,
-            consumer_secret => $self->consumer_secret,
+            options => {
+                consumer_key    => $self->consumer_key,
+                consumer_secret => $self->consumer_secret,
+            },
         );
         $self->_oauth($oauth);
     }
 
     $self->_oauth;
+}
+
+sub access_token {
+    my ($self, $access_token) = @_;
+
+    if ($access_token) {
+        $self->_access_token($access_token);
+        $self->oauth->access_token($access_token);
+    }
+
+    $self->_access_token;
 }
 
 sub authorized {
@@ -84,7 +85,7 @@ sub get_authorization_url {
     my ($self, %args) = @_;
     my $request_token = $self->oauth->get_request_token(
         callback_url => $args{callback}          || '',
-        scope        => join(',', ($args{scopes} || 'read_public')) || '',
+        scope        => join(',', (@{$args{scopes} || ['read_public']})) || '',
     ) or die $self->oauth->errstr;
 
     $self->request_token($request_token);
@@ -100,6 +101,7 @@ sub request_access_token {
 
     $self->access_token($access_token->token);
     $self->access_token_secret($access_token->secret);
+
     $access_token;
 }
 
